@@ -1,0 +1,15 @@
+mutation {
+  addProject(title: "Bootstrap", weight: 1, description: "Bootstrap is a free and open-source CSS framework directed at responsive, mobile-first front-end web development.") {
+    title
+    weight
+    description
+  }
+}
+
+mutation {
+  addTask(title: "Reboot styling", projectId: "6734eb578d3e7a76f6a0c1ff", weight: 2, description: "Add Bootstrp to reset the CSS styling.") {
+    title
+    weight
+    description
+  }
+}
