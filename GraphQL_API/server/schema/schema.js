@@ -1,15 +1,17 @@
-const { GraphQLSchema, GraphQLObjectType, GraphQLString, GraphQLInt, GraphQLID } = require('graphql');
-const lodash = require('lodash');
+const { GraphQLSchema, GraphQLObjectType, GraphQLString, GraphQLInt, GraphQLID, GraphQLList } = require('graphql');
+const _ = require('lodash');
 
 const tasks = [
   {
     id: '1',
+    projectId: '1',
     title: 'Create your first webpage',
     weight: 1,
     description: 'Create your first HTML file 0-index.html with: -Add the doctype on the first line (without any comment) -After the doctype, open and close a html tag Open your file in your browser (the page should be blank)'
   },
   {
     id: '2',
+    projectId: '1',
     title: 'Structure your webpage',
     weight: 1,
     description: 'Copy the content of 0-index.html into 1-index.html Create the head and body sections inside the html tag, create the head and body tags (empty) in this order'
@@ -33,22 +35,34 @@ const projects = [
 
 const TaskType = new GraphQLObjectType({
   name: 'Task',
-  fields: {
+  fields: () => ({
     id: { type: GraphQLID },
     title: { type: GraphQLString },
     weight: { type: GraphQLInt },
-    description: { type: GraphQLString }
-  }
+    description: { type: GraphQLString },
+    project: {
+      type: TaskType,
+      resolve: (parent) => {
+        return _.find(projects, { id: parent.projectId });
+      }
+    }
+  })
 });
 
 const ProjectType = new GraphQLObjectType({
   name: 'Project',
-  fields: {
+  fields: () => ({
     id: { type: GraphQLID },
     title: { type: GraphQLString },
     weight: { type: GraphQLInt },
-    description: { type: GraphQLString }
-  }
+    description: { type: GraphQLString },
+    tasks: {
+      type: new GraphQLList(TaskType),
+      resolve: (parent) => {
+        return _.filter(tasks, { projectId: parent.id });
+      }
+    }
+  })
 });
 
 const RootQuery = new GraphQLObjectType({
@@ -60,7 +74,7 @@ const RootQuery = new GraphQLObjectType({
         id: { type: GraphQLID }
       },
       resolve: (parent, args) => {
-        return lodash.find(tasks, { id: args.id });
+        return _.find(tasks, { id: args.id });
       }
     },
     project: {
@@ -69,7 +83,19 @@ const RootQuery = new GraphQLObjectType({
         id: { type: GraphQLID }
       },
       resolve: (parent, args) => {
-        return lodash.find(projects, { id: args.id });
+        return _.find(projects, { id: args.id });
+      }
+    },
+    tasks: {
+      type: new GraphQLList(TaskType),
+      resolve: () => {
+        return tasks;
+      }
+    },
+    projects: {
+      type: new GraphQLList(ProjectType),
+      resolve: () => {
+        return projects;
       }
     }
   }
